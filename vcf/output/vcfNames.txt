@@ -1,0 +1,4 @@
+./sample/caobo.final.indel.hg19_multianno.1000.vcf
+./sample/caobo.final.snp.hg19_multianno.1000.vcf
+./sample/jianghong.final.indel.hg19_multianno.1000.vcf
+./sample/jianghong.final.snp.hg19_multianno.1000.vcf

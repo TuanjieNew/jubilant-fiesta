@@ -1,0 +1,33 @@
+# For hujj, produce by niutj, 20170728
+# First put the names of all vcf files to vcfNames.txt.
+# snp files and indel files are process separately.
+# The first column of output files is chr_pos information. The next columns consist of specific information and corresponding patient's name.
+# Usagei (in command line): python getInfoVcf.py
+Indel: 算法：先读取一个indel文件，初始化wanrenInfo_indel.txt. m
+real	4m7.240s
+user	3m55.508s
+sys	0m11.160s
+结果： info_indel.txt 61,284 行。
+snp:占内存很小，主要是耗时长, 可能是自己算法的问题
+用和indel相同的算法：
+real	907m24.520s
+user	900m4.069s
+sys	5m28.066s
+用另外一种算法：
+先把所有的snp文件读一遍，得到所有存在snp的位点，写入到wanrenInfo_snp.txt的第一列。读取单个snp文件，把每行的chr_pos作为key, 提取的信息作为value，存入字典中，再遍历wanrenInfo_snp.txt，判断每行的chr_pos是否在字典中，如果在，就在这一行结尾加上chr_pos对应的提取信息，如果不在加上“---”，然后写入临时文件。wanrenInfo_snp.txt遍历完之后，把临时文件重命名为wanrenInfo_snp.txt.
+real	763m38.771s
+user	761m15.228s
+sys	0m57.227s
+结果：wanrenInfo_snp.txt 754,798 行。
+注：以上两种算法可能的限速步骤是：判断key是否存在, 这两种算法更适用于大文件。
+
+第三算法：（速度很快，30s, 但因python dic和list组合后不能很好工作，失败）
+Snp文件：
+先把所有的snp文件读一遍，得到所有存在snp的位点，把每个位点chr_pos当做key, 文件个数是m，含有m个 ‘-‘ 的list [‘-‘, ‘-’, ‘-’,……]当做value，得到字典dic. 
+读取第n个snp 文件，info是每行提取的信息， 通过dic[chr_pos][n-1] =info，把key为chr_pos的value的第n个元素‘---’替换成info， 但循环结束之后，dic所有的key对应的value的第n个元素都变成了该snp文件的最后一行提取的info。
+第四算法：（用多维哈希来代替list，耗时：70s）
+1.	初始化：先把所有的snp文件读一遍，得到所有存在snp的位点,把每个位点chr_pos 当做key, value是包含了多个新的dictionary，拥有此位点的最后一个文件的编号作为key, ‘-’作为value。
+2.	填充多维字典：遍历dic，把每个key对应的value都增加到vcfNames.txt行数lnum个字典，i in range(lnum), i+1作为key，‘-’作为value。
+3.	读取单个vcf文件：读取第n个文件，dic[‘#CHROM_POS’][str(n)] = patient_name,获取病人名字，chr_pos是从每行提取的位置信息，info是从每行提取的变异信息，通过dic[chr_pos][str(n)] = info, 把相应的‘-’替换成info, 循环结束之后，info都增加到了dic中。读取完所有的文件，所有的信息都增加到了dic
+4.	输出info到文本：对dic以chr_pos位置信息排序，生成dic_sort，遍历dic_sort, 输出信息到文本。
+
