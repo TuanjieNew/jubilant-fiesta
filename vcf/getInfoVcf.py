@@ -46,19 +46,20 @@ def getInfo(file_type):
                     continue
                 ln_ls = ln.split('\t')
                 chr_pos = ln_ls[0] + '_' + str(ln_ls[1])
-                dic[chr_pos] ={str(lnum):'-' }
+                dic[chr_pos] ={lnum:'-' }
             VCFFILE.close()
     FILE.close()
 
     # fill dic with '-'
     for e in dic:
         #print(dic[e])
-        for j in range(lnum):
-            j += 1
-            dic[e][str(j)] = '-'
+        for j in range(lnum + 1):
+            #j += 1
+            dic[e][j] = '-'
 
     # read vcfNames.txt
     FNAME = open('./output/vcfNames.txt', 'r')
+    dic['#CHROM_POS'][0] = 'INFO'
     line_num = 0
     for line in FNAME:
         line_num += 1
@@ -75,7 +76,7 @@ def getInfo(file_type):
             continue
 
         # assign patient names
-        dic['#CHROM_POS'][str(line_num)] = pName
+        dic['#CHROM_POS'][line_num] = pName
         # collect information from vcf files
         VCFFILE = open(line, 'r')
         for ln in VCFFILE:
@@ -87,11 +88,14 @@ def getInfo(file_type):
             info_ls = ln_ls[7].split(';')
             # infomation length in each line is not equal to others
             if len(info_ls) == 52:
-                info = ';'.join(info_ls[7:12]) + ';' + info_ls[45] + ';' + ln_ls[9].split(':')[5] + ';' + ln_ls[10].split(':')[5]
+                INFO = ';'.join(info_ls[7:12]) + ';' + info_ls[45] 
+                info = ln_ls[9].split(':')[5] + ';' + ln_ls[10].split(':')[5]
             elif len(info_ls) == 51:
-                info = ';'.join(info_ls[6:11]) + ';' + info_ls[44] + ';' + ln_ls[9].split(':')[5] + ';' + ln_ls[10].split(':')[5]
+                INFO = ';'.join(info_ls[6:11]) + ';' + info_ls[44] 
+                info = ln_ls[9].split(':')[5] + ';' + ln_ls[10].split(':')[5]
             #  assign dic
-            dic[chr_pos][str(line_num)] = info
+            dic[chr_pos][0] = INFO
+            dic[chr_pos][line_num] = info
         VCFFILE.close()
     # sort dic according to chr_pos
     dic_sort = sorted(dic.iteritems(), key = lambda asd:asd[0], reverse = False)
@@ -101,8 +105,9 @@ def getInfo(file_type):
     OUTFILE = open('./output/'+out_type+'_info_summary.tsv','w')
     for e in dic_sort:
         info_str = ''
-        for i in e[1]:
-            info_str = info_str + '\t' + e[1][i]
+        info_sort = sorted(e[1].iteritems(), key = lambda asd:asd[0], reverse = False)
+        for i in info_sort:
+            info_str = info_str + '\t' + i[1]
         OUTFILE.write(e[0]+'\t'+info_str+'\n')
     return out_type+' file summary finished'
 
