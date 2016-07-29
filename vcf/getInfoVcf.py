@@ -3,8 +3,8 @@
 # For hujj, produce by niutj, 20170728
 # First put the names of all vcf files to vcfNames.txt.
 # snp files and indel files are process separately.
-# The first column of output files is chr_pos information. The next columns consist of specific information and corresponding patient's name.
-# Usagei (in command line): python getInfoVcf.py 
+# The first column of output files is chr_pos information. The next is INFO. The following columns consist of specific information and corresponding patient's name.
+# Usage (in command line): python getInfoVcf.py 
 
 import os
 
